@@ -20,3 +20,8 @@ packages = [{include = "fs25_backuper", from = "src"}]
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pre-commit (>=4.3.0,<5.0.0)"
+]
