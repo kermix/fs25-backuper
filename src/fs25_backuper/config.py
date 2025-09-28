@@ -1,3 +1,5 @@
+# mypy: disable-error-code="call-overload, literal-required"
+
 from typing import Optional
 import tempfile
 

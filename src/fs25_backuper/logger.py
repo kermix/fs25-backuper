@@ -1,12 +1,24 @@
 import logging
+from enum import Enum
 
 from fs25_backuper.singleton import Singleton
 
 
+class LogLevel(Enum):
+    CRITICAL = logging.CRITICAL
+    FATAL = CRITICAL
+    ERROR = logging.ERROR
+    WARNING = logging.WARNING
+    WARN = WARNING
+    INFO = logging.INFO
+    DEBUG = logging.DEBUG
+    NOTSET = logging.NOTSET
+
+
 class Logger(Singleton):
-    def _initialize(self, level=logging.DEBUG):
+    def _initialize(self, level: LogLevel = LogLevel.DEBUG) -> None:
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(level)
+        self.logger.setLevel(level.value)
         self.logger.propagate = False
 
         if not self.logger.handlers:
@@ -17,10 +29,10 @@ class Logger(Singleton):
             console_handler.setFormatter(formatter)
             self.logger.addHandler(console_handler)
 
-    def set_level(self, level):
+    def set_level(self, level: int) -> None:
         self.logger.setLevel(level)
 
-    def get_logger(self):
+    def get_logger(self) -> logging.Logger:
         if not hasattr(self, "logger"):
             self._initialize()
         return self.logger

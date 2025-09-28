@@ -4,14 +4,15 @@ import boto3
 
 from boto3.exceptions import Boto3Error
 
+from fs25_backuper.config import S3UploadConfig
 from fs25_backuper.logger import Logger
 from fs25_backuper.error import UploadError
 
 
 class S3Uploader:
-    def __init__(self, config):
+    def __init__(self, config: S3UploadConfig) -> None:
         self.s3_client = boto3.client(
-            "s3",
+            service_name="s3",
             aws_access_key_id=config.access_key,
             aws_secret_access_key=config.secret_key,
             region_name=config.region,
@@ -22,7 +23,7 @@ class S3Uploader:
 
         self.logger = Logger().get_logger()
 
-    def upload(self, file_path: str, s3_key: str):
+    def upload(self, file_path: str, s3_key: str) -> None:
         try:
             self.logger.debug(
                 f"Uploading {file_path} to s3://{self.bucket_name}/{s3_key}"
@@ -40,7 +41,7 @@ class S3Uploader:
             raise UploadError(f"S3 upload error: {str(e)}") from e
 
     @cache
-    def _list_backups(self):
+    def _list_backups(self) -> list[dict]:
         try:
             response = self.s3_client.list_objects_v2(Bucket=self.bucket_name)
             backups = response.get("Contents", [])
@@ -48,7 +49,7 @@ class S3Uploader:
         except (Boto3Error) as e:
             raise UploadError(f"S3 list error: {str(e)}") from e
 
-    def _get_outdated_backups(self):
+    def _get_outdated_backups(self) -> list[dict]:
         backups = self._list_backups()
         if self.number_of_backups is None:
             return []

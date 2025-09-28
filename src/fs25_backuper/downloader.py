@@ -2,6 +2,7 @@ import os
 
 import requests
 
+from fs25_backuper.config import Config
 from fs25_backuper.logger import Logger
 from fs25_backuper.error import AuthenticationError, DownloadError
 
@@ -9,7 +10,7 @@ from fs25_backuper.error import AuthenticationError, DownloadError
 class Downloader:
     logger = Logger().get_logger()
 
-    def __init__(self, config):
+    def __init__(self, config: Config) -> None:
         self.__login_payload = {
             "username": config.username,
             "password": config.password,
@@ -23,14 +24,14 @@ class Downloader:
 
         self._authenticate()
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
         self.session.close()
 
     @property
-    def _login_payload(self):
+    def _login_payload(self) -> dict:
         return self.__login_payload
 
-    def _authenticate(self):
+    def _authenticate(self) -> None:
         try:
             auth_url = f"{self.url}/index.html?lang=en"
             response = self.session.post(auth_url, data=self._login_payload)
@@ -49,7 +50,7 @@ class Downloader:
         except requests.exceptions.RequestException as e:
             raise AuthenticationError(f"Authentication request failed: {str(e)}") from e
 
-    def get_savegame(self):
+    def get_savegame(self) -> requests.Response:
         self.logger.info("Downloading savegame...")
 
         try:
@@ -63,12 +64,14 @@ class Downloader:
         except requests.exceptions.RequestException as e:
             raise DownloadError(f"Download failed: {str(e)}") from e
 
-    def write_savegame(self, bytes_stream, savegame_path):
+    def write_savegame(
+        self, savegame_response: requests.Response, savegame_path: str
+    ) -> None:
         try:
             self.logger.debug(f"Writing savegame to {savegame_path}")
 
             with open(savegame_path, "wb") as f:
-                for chunk in bytes_stream.iter_content(chunk_size=8192):
+                for chunk in savegame_response.iter_content(chunk_size=8192):
                     f.write(chunk)
         except OSError as e:
             if os.path.exists(savegame_path):
@@ -76,11 +79,11 @@ class Downloader:
 
             raise DownloadError(f"File system error: {str(e)}") from e
         finally:
-            bytes_stream.close()
+            savegame_response.close()
 
         self.logger.info(f"Savegame written to {savegame_path}")
 
-    def download_savegame(self, path):
+    def download_savegame(self, path: str) -> None:
         savegame_data = self.get_savegame()
         self.write_savegame(savegame_data, savegame_path=path)
         self.logger.info("Savegame downloaded and saved successfully.")
