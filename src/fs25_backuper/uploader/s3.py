@@ -1,5 +1,3 @@
-from functools import cache
-
 import boto3
 
 from boto3.exceptions import Boto3Error
@@ -40,7 +38,6 @@ class S3Uploader:
         except (Boto3Error) as e:
             raise UploadError(f"S3 upload error: {str(e)}") from e
 
-    @cache
     def _list_backups(self) -> list[dict]:
         try:
             response = self.s3_client.list_objects_v2(Bucket=self.bucket_name)
