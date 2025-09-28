@@ -1,10 +1,11 @@
-import boto3
+from pathlib import Path
 
+import boto3
 from boto3.exceptions import Boto3Error
 
 from fs25_backuper.config import S3UploadConfig
-from fs25_backuper.logger import Logger
 from fs25_backuper.error import UploadError
+from fs25_backuper.logger import Logger
 
 
 class S3Uploader:
@@ -21,7 +22,7 @@ class S3Uploader:
 
         self.logger = Logger().get_logger()
 
-    def upload(self, file_path: str, s3_key: str) -> None:
+    def upload(self, file_path: Path, s3_key: str) -> None:
         try:
             self.logger.debug(
                 f"Uploading {file_path} to s3://{self.bucket_name}/{s3_key}"

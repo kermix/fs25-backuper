@@ -1,10 +1,11 @@
 import os
+from pathlib import Path
 
 import requests
 
 from fs25_backuper.config import Config
-from fs25_backuper.logger import Logger
 from fs25_backuper.error import AuthenticationError, DownloadError
+from fs25_backuper.logger import Logger
 
 
 class Downloader:
@@ -12,8 +13,8 @@ class Downloader:
 
     def __init__(self, config: Config) -> None:
         self.__login_payload = {
-            "username": config.username,
-            "password": config.password,
+            "username": config.username.get_secret_value(),
+            "password": config.password.get_secret_value(),
             "login": "Login",
         }
 
@@ -65,7 +66,7 @@ class Downloader:
             raise DownloadError(f"Download failed: {str(e)}") from e
 
     def write_savegame(
-        self, savegame_response: requests.Response, savegame_path: str
+        self, savegame_response: requests.Response, savegame_path: Path
     ) -> None:
         try:
             self.logger.debug(f"Writing savegame to {savegame_path}")
@@ -83,7 +84,7 @@ class Downloader:
 
         self.logger.info(f"Savegame written to {savegame_path}")
 
-    def download_savegame(self, path: str) -> None:
+    def download_savegame(self, path: Path) -> None:
         savegame_data = self.get_savegame()
         self.write_savegame(savegame_data, savegame_path=path)
         self.logger.info("Savegame downloaded and saved successfully.")
