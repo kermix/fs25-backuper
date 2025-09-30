@@ -74,6 +74,8 @@ class Downloader:
             with open(savegame_path, "wb") as f:
                 for chunk in savegame_response.iter_content(chunk_size=8192):
                     f.write(chunk)
+
+            self._savedgame_path = savegame_path
         except OSError as e:
             if os.path.exists(savegame_path):
                 os.remove(savegame_path)
@@ -88,3 +90,13 @@ class Downloader:
         savegame_data = self.get_savegame()
         self.write_savegame(savegame_data, savegame_path=path)
         self.logger.info("Savegame downloaded and saved successfully.")
+
+    def cleanup(self) -> None:
+        if hasattr(self, "_savedgame_path") and os.path.exists(self._savedgame_path):
+            try:
+                os.remove(self._savedgame_path)
+                self.logger.debug(
+                    f"Temporary savegame file {self._savedgame_path} deleted."
+                )
+            except OSError as e:
+                self.logger.error(f"Failed to delete temporary savegame file: {str(e)}")

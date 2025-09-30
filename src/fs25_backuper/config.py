@@ -79,3 +79,8 @@ class Config(BaseSettings, Singleton):
         env_prefix=prefix,
         env_nested_delimiter="__",
     )
+
+    cleanup_downloaded_savegame: bool = Field(
+        default=True,
+        description="Whether to delete the downloaded savegame after upload.",
+    )

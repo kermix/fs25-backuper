@@ -26,3 +26,9 @@ class UploadError(BackuperError):
     """Raised when upload fails"""
 
     pass
+
+
+class CleanError(UploadError):
+    """Raised when cleanup of old backups fails"""
+
+    pass

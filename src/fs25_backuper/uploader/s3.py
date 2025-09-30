@@ -1,27 +1,29 @@
 from pathlib import Path
+from typing import override
 
 import boto3
 from boto3.exceptions import Boto3Error
 
 from fs25_backuper.config import S3UploadConfig
-from fs25_backuper.error import UploadError
-from fs25_backuper.logger import Logger
+from fs25_backuper.error import CleanError, UploadError
+from fs25_backuper.uploader.base import BaseUploader
 
 
-class S3Uploader:
+class S3Uploader(BaseUploader):
     def __init__(self, config: S3UploadConfig) -> None:
         self.s3_client = boto3.client(
             service_name="s3",
-            aws_access_key_id=config.access_key,
-            aws_secret_access_key=config.secret_key,
+            aws_access_key_id=config.access_key.get_secret_value(),
+            aws_secret_access_key=config.secret_key.get_secret_value(),
             region_name=config.region,
         )
 
         self.bucket_name = config.bucket_name
         self.number_of_backups = config.number_of_backups
 
-        self.logger = Logger().get_logger()
+        super().__init__()
 
+    @override
     def upload(self, file_path: Path, s3_key: str) -> None:
         try:
             self.logger.debug(
@@ -32,12 +34,16 @@ class S3Uploader:
                 f"Uploaded {file_path} to s3://{self.bucket_name}/{s3_key}"
             )
 
-            outdated_backups = self._get_outdated_backups()
-            for backup in outdated_backups:
-                self.logger.info(f"Deleting outdated backup: {backup['Key']}")
-                self.s3_client.delete_object(Bucket=self.bucket_name, Key=backup["Key"])
+            self.clean_backups()
         except (Boto3Error) as e:
             raise UploadError(f"S3 upload error: {str(e)}") from e
+
+    def _remove_backup(self, s3_key: str) -> None:  # type: ignore[override]
+        try:
+            self.s3_client.delete_object(Bucket=self.bucket_name, Key=s3_key)
+            self.logger.info(f"Deleted backup: {s3_key} in buket {self.bucket_name}")
+        except OSError as e:
+            raise CleanError(f"File system remove error: {str(e)}") from e
 
     def _list_backups(self) -> list[dict]:
         try:
@@ -54,4 +60,4 @@ class S3Uploader:
         if len(backups) <= self.number_of_backups:
             return []
         backups = sorted(backups, key=lambda x: x["LastModified"])
-        return backups[: -self.number_of_backups]
+        return [b["Key"] for b in backups[: -self.number_of_backups]]
