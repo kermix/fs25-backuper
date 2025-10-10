@@ -16,6 +16,7 @@ from pydantic import (
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from fs25_backuper.logger import LogLevel
 from fs25_backuper.singleton import Singleton
 
 prefix = "FS25_BACKUPER_"
@@ -65,8 +66,8 @@ class Config(BaseSettings, Singleton):
         default="savegame_backup",
         alias=AliasChoices(f"{prefix}BACKUP_FILENAME_PREFIX", "backup_filename_prefix"),
     )
-    log_level: str = Field(
-        default="DEBUG", alias=AliasChoices(f"{prefix}LOG_LEVEL", "log_level")
+    log_level: LogLevel = Field(
+        default=LogLevel.DEBUG, alias=AliasChoices(f"{prefix}LOG_LEVEL", "log_level")
     )
     s3_upload: Optional[S3UploadConfig] = Field(
         default=None, alias=f"{prefix}S3_UPLOAD"
@@ -81,7 +82,7 @@ class Config(BaseSettings, Singleton):
     )
 
     model_config = SettingsConfigDict(
-        # cli_parse_args=True,
+        cli_parse_args=True,
         env_prefix=prefix,
         env_nested_delimiter="__",
         env_file=".env",
@@ -92,3 +93,14 @@ class Config(BaseSettings, Singleton):
         default=True,
         description="Whether to delete the downloaded savegame after upload.",
     )
+
+    @field_validator("log_level", mode="before")
+    def validate_log_level(cls, v: Union[str, LogLevel]) -> LogLevel:
+        if isinstance(v, LogLevel):
+            return v
+        try:
+            return LogLevel[v.upper()]
+        except KeyError:
+            raise ValueError(
+                f"Invalid log level: {v}. Valid levels: {', '.join(e.name for e in LogLevel)}"
+            )

@@ -18,7 +18,7 @@ def run():
 
     savegame_path = c.backup_path.joinpath(file_name)
 
-    logger = Logger().get_logger()
+    logger = Logger().get_logger(c.log_level)
 
     with Downloader(c) as d:
         d.download_savegame(savegame_path)

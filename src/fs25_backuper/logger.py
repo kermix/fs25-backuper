@@ -16,7 +16,7 @@ class LogLevel(Enum):
 
 
 class Logger(Singleton):
-    def _initialize(self, level: LogLevel = LogLevel.DEBUG) -> None:
+    def _initialize(self, level: LogLevel) -> None:
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(level.value)
         self.logger.propagate = False
@@ -32,7 +32,7 @@ class Logger(Singleton):
     def set_level(self, level: int) -> None:
         self.logger.setLevel(level)
 
-    def get_logger(self) -> logging.Logger:
+    def get_logger(self, level: LogLevel = LogLevel.DEBUG) -> logging.Logger:
         if not hasattr(self, "logger"):
-            self._initialize()
+            self._initialize(level)
         return self.logger

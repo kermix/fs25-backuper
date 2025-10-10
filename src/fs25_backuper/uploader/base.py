@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Union
 
+from fs25_backuper.config import Config
 from fs25_backuper.error import CleanError
 from fs25_backuper.logger import Logger
 
@@ -10,7 +11,9 @@ class BaseUploader(ABC):
     """Base class for uploaders"""
 
     def __init__(self):
-        self.logger = Logger().get_logger()
+        config = Config()
+
+        self.logger = Logger().get_logger(config.log_level)
 
     @abstractmethod
     def upload(self, file_path: Path, *args, **kwargs) -> None:

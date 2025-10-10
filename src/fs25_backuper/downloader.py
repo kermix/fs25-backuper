@@ -9,9 +9,8 @@ from fs25_backuper.logger import Logger
 
 
 class Downloader:
-    logger = Logger().get_logger()
-
     def __init__(self, config: Config) -> None:
+        self.logger = Logger().get_logger(config.log_level)
         self.__login_payload = {
             "username": config.login.get_secret_value(),
             "password": config.password.get_secret_value(),
