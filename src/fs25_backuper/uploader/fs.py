@@ -17,6 +17,12 @@ class FileSystemUploader(BaseUploader):
 
         super().__init__()
 
+    def __enter__(self) -> "FileSystemUploader":
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> None:  # type: ignore
+        pass
+
     def upload(self, file_path: Path) -> None:
         try:
             self.logger.debug(f"Copying {file_path} to {self.directory_path}")

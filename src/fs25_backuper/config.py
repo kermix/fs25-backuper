@@ -12,6 +12,7 @@ from pydantic import (
     HttpUrl,
     NewPath,
     SecretStr,
+    field_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -37,11 +38,16 @@ class FileSystemUploadConfig(BaseModel):
 
 class FTPUploadConfig(BaseModel):
     host: FtpUrl = Field()
-    port: int = Field(default=21)
     username: SecretStr = Field()
     password: SecretStr = Field()
-    remote_path: str = Field(default="/")
+    directory_path: str = Field(default=".")
     number_of_backups: Optional[int] = Field(None)
+
+    @field_validator("host", mode="after")
+    def validate_host(cls, v: FtpUrl) -> FtpUrl:
+        if v.host is None:
+            raise ValueError("FTP host must be specified.")
+        return v
 
 
 class Config(BaseSettings, Singleton):

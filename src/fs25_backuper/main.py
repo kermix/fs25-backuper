@@ -6,6 +6,7 @@ from fs25_backuper.config import Config
 from fs25_backuper.downloader import Downloader
 from fs25_backuper.logger import Logger
 from fs25_backuper.uploader.fs import FileSystemUploader
+from fs25_backuper.uploader.ftp import FTPUploader
 from fs25_backuper.uploader.s3 import S3Uploader
 
 if __name__ == "__main__":
@@ -25,18 +26,18 @@ if __name__ == "__main__":
 
         if c.s3_upload:
             logger.debug("Starting S3 upload")
-            s3_uploader = S3Uploader(c.s3_upload)
-            s3_key = savegame_path.name
-            s3_uploader.upload(savegame_path, file_name)
+            with S3Uploader(c.s3_upload) as s3_uploader:
+                s3_uploader.upload(savegame_path, file_name)
 
         if c.file_system_upload:
             logger.debug("Starting file system upload")
-            fs_uploader = FileSystemUploader(c.file_system_upload)
-            fs_uploader.upload(savegame_path)
+            with FileSystemUploader(c.file_system_upload) as fs_uploader:
+                fs_uploader.upload(savegame_path)
 
         if c.ftp_upload:
             logger.debug("Starting FTP upload")
-            pass  # TODO: implement FTP upload
+            with FTPUploader(c.ftp_upload) as ftp_uploader:
+                ftp_uploader.upload(savegame_path)
     finally:
         logger.debug("Cleaning up downloaded savegame")
         if c.cleanup_downloaded_savegame:

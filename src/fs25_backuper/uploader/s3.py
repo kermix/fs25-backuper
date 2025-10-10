@@ -23,6 +23,12 @@ class S3Uploader(BaseUploader):
 
         super().__init__()
 
+    def __enter__(self) -> "S3Uploader":
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> None:  # type: ignore
+        self.s3_client.close()
+
     @override
     def upload(self, file_path: Path, s3_key: str) -> None:
         try:
