@@ -11,7 +11,6 @@ from fs25_backuper.uploader.s3 import S3Uploader
 
 if __name__ == "__main__":
     c = Config()  # type: ignore[call-arg]
-    d = Downloader(c)
 
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     file_name = f"{c.backup_filename_prefix}_{timestamp}.zip"
@@ -20,8 +19,7 @@ if __name__ == "__main__":
 
     logger = Logger().get_logger()
 
-    try:
-
+    with Downloader(c) as d:
         d.download_savegame(savegame_path)
 
         if c.s3_upload:
@@ -38,7 +36,3 @@ if __name__ == "__main__":
             logger.debug("Starting FTP upload")
             with FTPUploader(c.ftp_upload) as ftp_uploader:
                 ftp_uploader.upload(savegame_path)
-    finally:
-        logger.debug("Cleaning up downloaded savegame")
-        if c.cleanup_downloaded_savegame:
-            d.cleanup()

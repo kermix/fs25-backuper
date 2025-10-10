@@ -25,8 +25,12 @@ class Downloader:
 
         self._authenticate()
 
-    def __exit__(self, exc_type, exc_value, traceback) -> None:
+    def __enter__(self) -> "Downloader":
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> None:  # type: ignore
         self.session.close()
+        self.cleanup()
 
     @property
     def _login_payload(self) -> dict:
@@ -92,6 +96,7 @@ class Downloader:
         self.logger.info("Savegame downloaded and saved successfully.")
 
     def cleanup(self) -> None:
+        self.logger.debug("Cleaning up downloaded savegame")
         if hasattr(self, "_savedgame_path") and os.path.exists(self._savedgame_path):
             try:
                 os.remove(self._savedgame_path)
