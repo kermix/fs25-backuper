@@ -13,7 +13,7 @@ class Downloader:
 
     def __init__(self, config: Config) -> None:
         self.__login_payload = {
-            "username": config.username.get_secret_value(),
+            "username": config.login.get_secret_value(),
             "password": config.password.get_secret_value(),
             "login": "Login",
         }

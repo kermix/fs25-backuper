@@ -9,7 +9,8 @@ from fs25_backuper.uploader.fs import FileSystemUploader
 from fs25_backuper.uploader.ftp import FTPUploader
 from fs25_backuper.uploader.s3 import S3Uploader
 
-if __name__ == "__main__":
+
+def run():
     c = Config()  # type: ignore[call-arg]
 
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -36,3 +37,7 @@ if __name__ == "__main__":
             logger.debug("Starting FTP upload")
             with FTPUploader(c.ftp_upload) as ftp_uploader:
                 ftp_uploader.upload(savegame_path)
+
+
+if __name__ == "__main__":
+    run()

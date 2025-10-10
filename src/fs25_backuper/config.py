@@ -51,7 +51,7 @@ class FTPUploadConfig(BaseModel):
 
 
 class Config(BaseSettings, Singleton):
-    username: SecretStr = Field(alias=AliasChoices(f"{prefix}USERNAME", "username"))
+    login: SecretStr = Field(alias=AliasChoices(f"{prefix}LOGIN", "login"))
     password: SecretStr = Field(alias=AliasChoices(f"{prefix}PASSWORD", "password"))
     url: HttpUrl = Field(alias=AliasChoices(f"{prefix}URL", "url"))
     savegame: str = Field(
@@ -84,6 +84,8 @@ class Config(BaseSettings, Singleton):
         # cli_parse_args=True,
         env_prefix=prefix,
         env_nested_delimiter="__",
+        env_file=".env",
+        env_file_encoding="utf-8",
     )
 
     cleanup_downloaded_savegame: bool = Field(
